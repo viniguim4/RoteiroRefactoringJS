@@ -1,17 +1,9 @@
 const { readFileSync } = require('fs');
 
 function gerarFaturaStr (fatura, pecas) {
-    let totalFatura = 0;
-    let creditos = 0;
-    let faturaStr = `Fatura ${fatura.cliente}\n`;
-    const formato = new Intl.NumberFormat("pt-BR",
-                          { style: "currency", currency: "BRL",
-                            minimumFractionDigits: 2 }).format;
-  
-    for (let apre of fatura.apresentacoes) {
-      const peca = pecas[apre.id];
-      let total = 0;
-  
+
+  function calcularTotalApresentacao(apre, peca){
+    let total = 0;
       switch (peca.tipo) {
       case "tragedia":
         total = 40000;
@@ -29,7 +21,22 @@ function gerarFaturaStr (fatura, pecas) {
       default:
           throw new Error(`Peça desconhecia: ${peca.tipo}`);
       }
+    return total;
+  }
+
+    let totalFatura = 0;
+    let creditos = 0;
+    let faturaStr = `Fatura ${fatura.cliente}\n`;
+    const formato = new Intl.NumberFormat("pt-BR",
+                          { style: "currency", currency: "BRL",
+                            minimumFractionDigits: 2 }).format;
   
+    for (let apre of fatura.apresentacoes) {
+      const peca = pecas[apre.id];
+      
+      // método extraido
+      let total = calcularTotalApresentacao(apre, peca);
+
       // créditos para próximas contratações.
       creditos += Math.max(apre.audiencia - 30, 0);
       if (peca.tipo === "comedia") 
